@@ -13,20 +13,24 @@ timeInject 	= 	[570, 1140] #co2 in ject (input in minutes)
 
 lots = 1e6
 
-pinNoFerts 		= 1
-pinNoLC 		= 2
-pinNoReset 		= 3
-pinNoLights		= 4
-pinNoInject		= 5
+# in order of:
+#	Ferts 	0
+#	LC 		1
+#	Lights 	2
+# 	Inject 	3
+pinListOutput 	= [1 2 3 4]
+pinStatusOutput = [0 0 0 0]
+
+pinListInput 	= [5]
 #----------------------------------------------------------------
 #-------------------------Functions------------------------------
-def time_check(timeOn,timeOff,timeCurrent,pin):
+def time_check(timeOn,timeOff,timeCurrent,pinNo):
 	if (timeCurrent > timeOn and timeCurrent < timeOff):
-		if pin == False:
+		if GPIO.output(pinNo, not GPIO.input(pinNo)) == False:
 			print("Switched on at", time.asctime(time.localtime()))
 		pinStatus = True	
 	else:
-		if pin == True:
+		if GPIO.output(pinNo, not GPIO.input(pinNo)) == True:
 			print("Switched off at", time.asctime(time.localtime()))
 		pinStatus = False
 	return pinStatus
@@ -48,11 +52,11 @@ def pump_run(timer,pin,runtime):
 #----------------------------------------------------------------
 #----------------------Setup-------------------------------------
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(pinNoFerts, GPIO.OUT)
-GPIO.setup(pinNoLC, GPIO.OUT)
-GPIO.setup(pinNoLights, GPIO.OUT)
-GPIO.setup(pinNoInject, GPIO.OUT)
-GPIO.setup(pinNoReset, GPIO.IN)
+GPIO.setup(pinListOutput[0], 	GPIO.OUT, initial = GPIO.LOW)
+GPIO.setup(pinListOutput[1], 	GPIO.OUT, initial = GPIO.LOW)
+GPIO.setup(pinListOutput[2], 	GPIO.OUT, initial = GPIO.LOW)
+GPIO.setup(pinListOutput[3], 	GPIO.OUT, initial = GPIO.LOW)
+GPIO.setup(pinListInput[0], 	GPIO.IN)
 
 #----------------------------------------------------------------
 
@@ -68,14 +72,18 @@ timeAbsPrev 	= time.time()/60
 # --------Loop
 while True:
 	# fetch current time
-	timeCurrent = time.localtime()[3]*60 + time.localtime()[4] # current time in minutes
-	timeAbs 	= time.time()/60 # time in minutes
+	timeCurrent = time.localtime()[3]*60 + time.localtime()[4] # in minutes
+	timeAbs 	= time.time()/60 # minutes
 	dt 			= timeAbs - timeAbsPrev
 
 	# lights check
-	pinLights = time_check(timeLights[0],timeLights[1],timeCurrent,pinLights)
+	pinStatusOutput[2] = time_check(timeLights[0],timeLights[1],
+									timeCurrent,pinListOutput[2])
+	GPIO.output(pinList[2],pinStatusOutput[2])
 	# CO2 check
-	pinInject = time_check(timeInject[0],timeLights[1],timeCurrent,pinInject)
+	pinStatusOutput[3] = time_check(timeInject[0],timeLights[1],
+									timeCurrent,pinListOutput[3])
+	GPIO.output(pinList[3],pinStatusOutput[3])
 	# Pumps--Ferts
 	timerFerts	 += dt
 	pinFerts = pump_check(timerFerts,intervalFerts,pinFerts)
@@ -85,10 +93,9 @@ while True:
 	pinLC = pump_check(timerLC,intervalLC,pinLC)	
 	timerLC,pinLC = pump_run(timerLC,pinLC,runtimeLC)
 	# Timer reset
-	if pinReset == True:
+	if GPIO.input(pinList[4]) == True:
 		timerFerts 	= lots
 		timerLC 	= lots
-		pinReset = False
 
 	# end of loop iterations
 	timeAbsPrev = time.time()/60
