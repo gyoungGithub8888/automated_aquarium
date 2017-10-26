@@ -13,11 +13,11 @@ timeInject 	= 	[570, 1140] #co2 in ject (input in minutes)
 
 lots = 1e6
 
-pinFerts 		= 1
-pinLC 			= 2
-pinReset 		= 3
-pinLights 		= 4
-pinInject 		= 5
+pinNoFerts 		= 1
+pinNoLC 		= 2
+pinNoReset 		= 3
+pinNoLights		= 4
+pinNoInject		= 5
 #----------------------------------------------------------------
 #-------------------------Functions------------------------------
 def time_check(timeOn,timeOff,timeCurrent,pin):
@@ -48,11 +48,11 @@ def pump_run(timer,pin,runtime):
 #----------------------------------------------------------------
 #----------------------Setup-------------------------------------
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(pinFerts, GPIO.OUT)
-GPIO.setup(pinLC, GPIO.OUT)
-GPIO.setup(pinLights, GPIO.OUT)
-GPIO.setup(pinInject, GPIO.OUT)
-GPIO.setup(pinReset, GPIO.IN)
+GPIO.setup(pinNoFerts, GPIO.OUT)
+GPIO.setup(pinNoLC, GPIO.OUT)
+GPIO.setup(pinNoLights, GPIO.OUT)
+GPIO.setup(pinNoInject, GPIO.OUT)
+GPIO.setup(pinNoReset, GPIO.IN)
 
 #----------------------------------------------------------------
 
