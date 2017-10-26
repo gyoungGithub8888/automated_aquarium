@@ -37,6 +37,8 @@ def is_output(pinNo):
 	return GPIO.output(pinNo, not GPIO.input(pinNo))
 def MDYT():
 	return time.asctime(time.localtime())
+def time_in_minutes():
+	return time.localtime()[3]*60 + time.localtime()[4]
 
 def timer_on_off(timeOn,timeOff,timeCurrent,pinNo):
 	"""Timer for lights and CO2 inject"""
@@ -71,15 +73,11 @@ GPIO.setup(PINLIST_OUTPUT[0], 	GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(PINLIST_OUTPUT[1], 	GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(PINLIST_PWM[0],	 	GPIO.OUT, initial = GPIO.LOW)
 GPIO.setup(PINLIST_PWM[1],	 	GPIO.OUT, initial = GPIO.LOW)
-
-# input with pull-up resistor to 3.3V and 10kOhm
 GPIO.setup(PINLIST_INPUT[0], 	GPIO.IN, pull_up_down = GPIO.PUD_UP)
-
-# pwm
+GPIO.add_event_detect(PINLIST_INPUT[0], GPIO.FALLING)
 pwm = GPIO.PWM(PINPWM,FREQ[0])
-pwm.stop()
-
 # --------Initializing Variables
+pwm.stop()
 pinStatusOutput = [0, 0]
 pinStatusPWM 	= [0, 0]
 timerFerts 		= 0
@@ -88,11 +86,9 @@ timerLC 		= 0
 timeAbsPrev 	= time.time()/60
 #----------------------------------------------------------------
 # ---------------------Begin Loop--------------------------------
-
-# --------Loop
 while True:
 	#--------fetch current time
-	timeCurrent = time.localtime()[3]*60 + time.localtime()[4]
+	timeCurrent = time_in_minutes()
 	timeAbs 	= time.time()/60
 	dt 			= timeAbs - timeAbsPrev
 	#--------lights, CO2 check
@@ -114,11 +110,11 @@ while True:
 							RUNTIME[1],PINLIST_PWM[1],
 							DC[1],pwm)
 	# Timer reset
-	if GPIO.input(pinList[4]) == True:
+	if GPIO.event_detected(PINLIST_INPUT[0]):
 		timerFerts 	= LOTS
 		timerLC 	= LOTS
 
 	# end of loop iterations
 	timeAbsPrev = time.time()/60
 	time.sleep(LOOP_DELAY_INTERVAL)
-#----------------------End Loop-------------------------------------
+#----------------------End Loop-----------------------------------
