@@ -1,9 +1,25 @@
 import time
 import RPi.GPIO as GPIO
-GPIO.setmode(GPIO.BCM)
-GPIO.setup( , GPIO.OUT)
-GPIO.setup( , GPIO.OUT)
+#----------------------Constants---------------------------------
+loopDelayInterval 	= 10
 
+intervalFerts 	= 24 * 7 * 60 #fertilizer (in minutes)
+intervalLC	 	= 24 * 60 #liquid carbon (in minutes)
+runtimeFerts	= 5 #in seconds
+runtimeLC 		= 1 #in seconds
+
+timeLights 	= 	[600, 1200] #lights (input in minutes)
+timeInject 	= 	[570, 1140] #co2 in ject (input in minutes)
+
+lots = 1e6
+
+pinFerts 		= 1
+pinLC 			= 2
+pinReset 		= 3
+pinLights 		= 4
+pinInject 		= 5
+#----------------------------------------------------------------
+#-------------------------Functions------------------------------
 def time_check(timeOn,timeOff,timeCurrent,pin):
 	if (timeCurrent > timeOn and timeCurrent < timeOff):
 		if pin == False:
@@ -29,25 +45,15 @@ def pump_run(timer,pin,runtime):
 		pin = False
 		timer = runtime/60
 	return timer,pin
+#----------------------------------------------------------------
+#----------------------Setup-------------------------------------
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(pinFerts, GPIO.OUT)
+GPIO.setup(pinLC, GPIO.OUT)
+GPIO.setup(pinLights, GPIO.OUT)
+GPIO.setup(pinInject, GPIO.OUT)
+GPIO.setup(pinReset, GPIO.IN)
 
-#----------------------Variables---------------------------------
-loopDelayInterval 	= 10
-
-pinFerts 		= False
-pinLC 			= False
-pinReset 		= True
-pinLights 		= False
-pinInject 		= False
-
-intervalFerts 	= 24 * 7 * 60 #fertilizer (in minutes)
-intervalLC	 	= 24 * 60 #liquid carbon (in minutes)
-runtimeFerts	= 5 #in seconds
-runtimeLC 		= 1 #in seconds
-
-timeLights 	= 	[600, 1200] #lights (input in minutes)
-timeInject 	= 	[570, 1140] #co2 in ject (input in minutes)
-
-lots = 1e6
 #----------------------------------------------------------------
 
 
